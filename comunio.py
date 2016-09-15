@@ -1,9 +1,9 @@
 import csv
 
 class Enum(set):
-	def __init__(self, arg):
-		super(Enum, self).__init__()
-		self.__dict__ = {value:key for value, key in enumerate(arg)}
+  def __init__(self, arg):
+    super(Enum, self).__init__()
+    self.__dict__ = {value:key for value, key in enumerate(arg)}
 
   def __getattr__(self, name):
       if name in self:
@@ -48,10 +48,10 @@ class Player(object):
 	def position(self):
 		return _position
 
-	def __str__(self):
-		return "Player {0}: (owner: {1}) (value: {2}) (point:{3}) (position: {4})" \
-			.format(self.name, OWNER_STR[self.owner], \
-						  self.value, self.point, POSITION_STR[self.position])
+  def __str__(self):
+    return "Player {0}: (owner: {1}) (value: {2}) (point:{3}) (position: {4})" \
+      .format(self.name, OWNER_STR[self.owner], \
+              self.value, self.point, POSITION_STR[self.position])
 		
 
 class Team:
