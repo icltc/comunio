@@ -6,14 +6,14 @@ class Enum(set):
     self.__dict__ = {value:key for value, key in enumerate(arg)}
 
   def __getattr__(self, name):
-      if name in self:
-          return name
-      raise AttributeError
+    if name in self:
+       return name
+    raise AttributeError
 
 POSITION_TYPE = Enum(["S", "M", "D", "GK"])
 POSITION_STR = {POSITION_TYPE.S: "Striker", 
-								POSITION_TYPE.M: "Middlefielder", 
-								POSITION_TYPE.D: "Defender",
+                POSITION_TYPE.M: "Middlefielder", 
+                POSITION_TYPE.D: "Defender",
 								POSITION_TYPE.GK: "Goal Keeper"}
 
 OWNER_TYPE = Enum(["M", "U", "C"])
