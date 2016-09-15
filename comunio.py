@@ -1,5 +1,23 @@
 import csv
 
+# class to read csv file into structured object
+class CsvReader:
+  def __init__(self, filename, delimiter=',', quotechar='|'):
+    with open(filename, 'rb') as csvfile:
+      spamreader = csv.reader(csvfile, delimiter=delimiter, quotechar=quotechar)
+      rows = [row for row in spamreader]
+      self._header = rows[0]
+      self._rows = rows[1:]
+
+  @property
+  def header(self):
+      return self._header
+
+  @property
+  def rows(self):
+    return self._rows
+
+
 class Enum(set):
   def __init__(self, arg):
     super(Enum, self).__init__()
