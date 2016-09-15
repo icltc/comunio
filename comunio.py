@@ -7,7 +7,7 @@ class Enum(set):
 
   def __getattr__(self, name):
     if name in self:
-       return name
+      return name
     raise AttributeError
 
 POSITION_TYPE = Enum(["S", "M", "D", "GK"])
