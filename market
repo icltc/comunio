@@ -1,4 +1,4 @@
-name,position,value,point,counterparty
+name,position,value,point,owner
 A.Hernandez,S,8500000,11,U
 Alderweireld,D,12500000,17,U
 Boyd,M,3250000,10,U
@@ -11,7 +11,7 @@ Mutch,M,286000,2,U
 Ndong,M,2000000,0,U
 Romeu,M,2628000,10,U
 Cork,M,7110000,13,U
-A. Moreno, D,3060000,0,C
+A. Moreno,D,3060000,0,C
 Djilobodji,D,2150000,10,C
 Ospina,GK,160000,0,C
 Shawcross,D,2520000,10,C
