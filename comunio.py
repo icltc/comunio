@@ -47,40 +47,25 @@ OWNER_STR = {OWNER_TYPE.M: "Me", OWNER_TYPE.U: "User", OWNER_TYPE.C: "Computer"}
 class Player:
   """docstring for Player"""
   def __init__(self, name, position, value=0.0, point=0.0, owner='M'):
-    self._name = name
-    self._owner = OWNER_TYPE[owner]
-    self._value = float(value)
-    self._point = float(point)
-    self._position = POSITION_TYPE[position]
+    self.__dict__["name"] = name
+    self.__dict__["owner"] = OWNER_TYPE[owner]
+    self.__dict__["value"] = float(value)
+    self.__dict__["point"] = float(point)
+    self.__dict__["position"] = POSITION_TYPE[position]
+    self.__dict__["target"] = False
+    self.__dict__["recommend"] = False
+    self.__dict__["cp"] = self.point * 100000 / self.value
 
   # properties
-  @property
-  def name(self):
-    return self._name
-  @property
-  def owner(self):
-    return self._owner
-
-  @property
-  def value(self):
-    return self._value
-
-  @property
-  def point(self):
-    return self._point
-
-  @property
-  def position(self):
-    return self._position
-
-  @property
-  def cp(self):
-    return self._point / self._value
+  def __getattr__(self, name):
+    if name in self.__dict__:
+      return self.__dict__[name]
+    raise AttributeError
 
   def __str__(self):
-    return "Player {0}: (owner: {1}) (value: {2}) (point:{3}) (position: {4})" \
-      .format(self.name, OWNER_STR[self.owner], \
-              self.value, self.point, POSITION_STR[self.position])
+    return "{0: <32}: {1: <10} - {2:15.0f} {3:5.0f} ({4:.4f}) {5}{6}" \
+            .format(self.name + "("+ POSITION_STR[self.position] + ")", OWNER_STR[self.owner], \
+              self.value, self.point, self.cp, "" if not self.target else "#", "" if not self.recommend else "*")
 
 
 class Team:
@@ -99,12 +84,24 @@ class Team:
     self._players = self._extract_players(teamfile)
     self._value = reduce(lambda x, y: int(x) + int(y), [ i.value for i in self._players])
 
+
+  @property
+  def players(self):
+    return self._players
+
   def __str__(self):
-    return "Team '{2}' has balance of {0} and value of {1}\n----------------------------\n" \
-      .format(self._balance, self._value, self._name) + "\n".join(str(i) for i in self._players)
+    return "Team '{2}' has balance of {0} and value of {1}\n".format(self._balance, self._value, self._name) + \
+      "----------------------------------------------------------------------------------\n" + \
+      "Player(position)                : Owner       -          Value Point (Point/Value)\n" + \
+      "----------------------------------------------------------------------------------\n" + \
+      "\n".join(str(i) for i in self._players)
 
   def sort(self, position = False):
-    print "rank the whole team or based on the position"
+    """rank the whole team or based on the position"""
+    if not position:
+      self._players = sorted(self._players, reverse = True, key=lambda player: player.cp)
+    else:
+      self._players = sorted(self._players, reverse = True, key=lambda player: (player.position, player.cp))
 
 
 class Market(Team):
@@ -143,7 +140,40 @@ class Comnunio:
     self.market = Market('market')
 
   def recommend(self):
-    print "recommend to buy players just based on the current market"
+    print "recommend to buy players just based on the current market (iregardless of the position)"
+    self.team.sort()
+    self.market.sort()
+    print "Listing the team from highest PpV(Point per Value) to lowest"
+    print self.team
+    print "Listing the market from highest PpV(Point per Value) to lowest"
+    print self.market
+
+
+  def recommend_smart(self, target = 1):
+    """target is the number of worst players on each positions that we target to replace"""
+    print "recommend to buy players just based on the current market ( corresponding position )"
+    self.team.sort(True)
+    self.market.sort(True)
+
+    targets = []
+    for key, player in enumerate(self.team.players):
+      if len(targets)>target and targets[-target][0] == player.position:
+        targets[-target] = [player.position, player.cp, key]
+      else:
+        targets.append([player.position, player.cp, key])
+
+    for player in targets:
+      # set target
+      self.team.players[player[2]].target = True
+
+      # mark recommendation
+      for key, mk in enumerate(self.market.players):
+        if mk.position == player[0] and mk.cp > player[1]:
+          self.market.players[key].recommend = True
+
+    print self.team
+    
+    print self.market
 
   def rebalance(self):
     print "recommend to buy players from market and sell own players to fund (stick to current formation)"
@@ -153,7 +183,8 @@ class Comnunio:
 
 
 def main():
-  game = Comnunio
+  game = Comnunio()
+  game.recommend_smart()
 
 if __name__ == "__main__":
   main()
