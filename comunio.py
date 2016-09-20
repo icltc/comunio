@@ -1,4 +1,5 @@
 import csv
+import time
 
 # class to read csv file into structured object
 class CsvReader:
@@ -54,6 +55,7 @@ class Player:
     self.__dict__["position"] = POSITION_TYPE[position]
     self.__dict__["target"] = False
     self.__dict__["recommend"] = False
+    self.__dict__["oneshot"] = False # Player who can be transferred directly
     self.__dict__["cp"] = self.point * 100000 / self.value
 
   # properties
@@ -63,9 +65,12 @@ class Player:
     raise AttributeError
 
   def __str__(self):
-    return "{0: <32}: {1: <10} - {2:15.0f} {3:5.0f} ({4:.4f}) {5}{6}" \
+    return "{0: <32}: {1: <10} - {2:15.0f} {3:5.0f} ({4:.4f}) {5}{6}{7}" \
             .format(self.name + "("+ POSITION_STR[self.position] + ")", OWNER_STR[self.owner], \
-              self.value, self.point, self.cp, "" if not self.target else "#", "" if not self.recommend else "*")
+              self.value, self.point, self.cp, \
+              "" if not self.target else "#", \
+              "" if not self.recommend else "*",\
+              "" if not self.oneshot else "$")
 
 
 class Team:
@@ -88,6 +93,9 @@ class Team:
   @property
   def players(self):
     return self._players
+  @property
+  def balance(self):
+    return self._balance
 
   def __str__(self):
     return "Team '{2}' has balance of {0} and value of {1}\n".format(self._balance, self._value, self._name) + \
@@ -149,16 +157,16 @@ class Comnunio:
     print self.market
 
 
-  def recommend_smart(self, target = 1):
-    """target is the number of worst players on each positions that we target to replace"""
+  def recommend_smart(self, target_nb = 1):
+    """target_nb is the number of worst players on each positions that we target to replace"""
     print "recommend to buy players just based on the current market ( corresponding position )"
     self.team.sort(True)
     self.market.sort(True)
 
     targets = []
     for key, player in enumerate(self.team.players):
-      if len(targets)>target and targets[-target][0] == player.position:
-        targets[-target] = [player.position, player.cp, key]
+      if len(targets)>target_nb and targets[-target_nb][0] == player.position:
+        targets[-target_nb] = [player.position, player.cp, key]
       else:
         targets.append([player.position, player.cp, key])
 
@@ -170,6 +178,8 @@ class Comnunio:
       for key, mk in enumerate(self.market.players):
         if mk.position == player[0] and mk.cp > player[1]:
           self.market.players[key].recommend = True
+          if mk.value < self.team.balance:
+            self.market.players[key].oneshot = True
 
     print self.team
     
@@ -178,13 +188,37 @@ class Comnunio:
   def rebalance(self):
     print "recommend to buy players from market and sell own players to fund (stick to current formation)"
 
+
   def rebalance_smart(self):
     print "recommend to buy players from market and sell own players to fund (able to change formation)" 
 
 
 def main():
+
   game = Comnunio()
-  game.recommend_smart()
+  daddy_first_answer = raw_input('Hello Daddy, this is anan, do you want to view your global team status? (Y/N))')
+  if daddy_first_answer == 'Y':
+    print "OK"
+    game.recommend()
+    daddy_second_answer = raw_input("Are you happy? (Y/N)")
+    if daddy_second_answer == 'Y':
+      print "Now I will show you anan-version2, check * and # in the graph"
+      time.sleep( 1 )
+      game.recommend_smart()
+      daddy_third_answer = raw_input("Are you happy? (Y/N)")
+      if daddy_third_answer == 'Y' or daddy_third_answer == 'y':
+        print "Magic time"
+        time.sleep(2)
+        print "piu piu ~~"
+        game.rebalance()
+
+  print "ByeBye!"
+
+
+
+  
+  
+  
 
 if __name__ == "__main__":
   main()
